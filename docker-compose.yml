@@ -1,0 +1,49 @@
+version: '3.1'
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - middleware
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    networks:
+      - middleware
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "/kafka_health.sh"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - ./kafka_health.sh:/kafka_health.sh
+  
+  kafka-init:
+    image: wurstmeister/kafka
+    networks:
+      - middleware
+    command: ["/bin/bash","-c","/setup_kafka.sh"]
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      TEST_TOPIC_NAME: testTopic
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./setup_kafka.sh:/setup_kafka.sh
+    init: true
+
+networks:
+  middleware:
