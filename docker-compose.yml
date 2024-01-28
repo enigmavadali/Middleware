@@ -37,7 +37,8 @@ services:
     command: ["/bin/bash","-c","/setup_kafka.sh"]
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      TEST_TOPIC_NAME: testTopic
+      RESIDENT_TOPIC: resident-data
+      SENSOR_TOPIC: sensor-data
     depends_on:
       kafka:
         condition: service_healthy
