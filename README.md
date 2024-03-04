@@ -6,3 +6,5 @@
 
 # Linux machine setup
 
+`sudo su`
+
